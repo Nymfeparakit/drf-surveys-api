@@ -24,3 +24,6 @@ class Question(models.Model):
         choices=TYPE_CHOICES,
         default='text'
     )
+
+    def __str__(self):
+        return self.title
