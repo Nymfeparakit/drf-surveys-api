@@ -55,7 +55,10 @@ class UserAnswersQuestion(models.Model):
     Содержит информацию о выбранных пользователем вариантах ответа 
     Или написанном тексте ответа
     """
-    user_id = models.IntegerField()
+    user_id = models.ForeignKey(
+        'SimpleUser',
+        on_delete=models.CASCADE
+    )
     question_id = models.ForeignKey(
         'Question',
         on_delete=models.CASCADE
@@ -65,3 +68,11 @@ class UserAnswersQuestion(models.Model):
         on_delete=models.CASCADE
     ) # выбранный ответ, если вопроса содержал варианты ответа
     answer_text = models.TextField() # текст ответа, если для вопроса не было вариантов ответа
+
+
+class SimpleUser(models.Model):
+    """
+    Класс "пользователя", проходившего опрос
+    Не содержит регистрации/авторизации, нужен только для хранения id анонимых пользователей, проходивших опросы
+    """
+    pass
