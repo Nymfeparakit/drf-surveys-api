@@ -2,9 +2,12 @@ from django.db import models
 
 
 class Survey(models.Model):
+    """
+    Модель опроса
+    """
     title = models.CharField(max_length=250)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateTimeField() # дата начала
+    end_date = models.DateTimeField() # дата конца
     description = models.TextField()
 
     def __str__(self):
@@ -12,6 +15,10 @@ class Survey(models.Model):
 
 
 class Question(models.Model):
+    """
+    Вопрос, содержащийся в опросе
+    Содержит информацию о тексте вопроса, его типе
+    """
     TYPE_CHOICES = (
         ('text', 'text'),
         ('single_choice', 'single_choice'),
