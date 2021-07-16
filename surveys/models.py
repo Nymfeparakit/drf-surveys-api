@@ -29,11 +29,15 @@ class Question(models.Model):
         on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=250)
+    number = models.IntegerField() # порядковый номер вопроса в опросе
     type = models.CharField(
         max_length=15,
         choices=TYPE_CHOICES,
         default='text'
     )
+
+    class Meta:
+        ordering = ['number']
 
     def __str__(self):
         return self.title
@@ -41,13 +45,20 @@ class Question(models.Model):
 
 class QuestionChoice(models.Model):
     """
-    Вариант ответа для вопроса
+    Вариант ответа на вопроса
     """
     question_id = models.ForeignKey(
         'Question',
         on_delete=models.CASCADE
     )
     text = models.CharField(max_length=250)
+    number = models.IntegerField() # порядковый номер варианта ответа на вопрос
+
+    class Meta:
+        ordering = ['number']
+
+    def __str__(self):
+        return str(self.id)
 
 
 class UserAnswersQuestion(models.Model):
