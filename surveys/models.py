@@ -25,7 +25,7 @@ class Question(models.Model):
         ('multiple_choice', 'multiple_choice'),
     )
     survey_id = models.ForeignKey(
-        'Syrvey',
+        'Survey',
         on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=250)
