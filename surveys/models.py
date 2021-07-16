@@ -6,8 +6,8 @@ class Survey(models.Model):
     Модель опроса
     """
     title = models.CharField(max_length=250)
-    start_date = models.DateTimeField() # дата начала
-    end_date = models.DateTimeField() # дата конца
+    start_date = models.DateField() # дата начала
+    end_date = models.DateField() # дата конца
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
