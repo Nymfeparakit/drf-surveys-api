@@ -27,6 +27,7 @@ class Question(models.Model):
     survey_id = models.ForeignKey(
         'Survey',
         on_delete=models.CASCADE,
+        related_name='questions'
     )
     title = models.CharField(max_length=250)
     number = models.IntegerField() # порядковый номер вопроса в опросе
@@ -49,7 +50,8 @@ class QuestionChoice(models.Model):
     """
     question_id = models.ForeignKey(
         'Question',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='choices'
     )
     text = models.CharField(max_length=250)
     number = models.IntegerField() # порядковый номер варианта ответа на вопрос
