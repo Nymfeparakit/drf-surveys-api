@@ -74,7 +74,7 @@ class TakeSurveyView(views.APIView):
         serializer.save()
         
         return Response(
-            'Survey was completed successfully',
+            'Опрос успешно пройден',
             status=status.HTTP_200_OK
         )
 
