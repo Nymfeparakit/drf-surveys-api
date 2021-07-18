@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Count
 
 from .models import Survey, Question, QuestionChoice, UserAnswersQuestion, UserTakesSurvey, SimpleUser
 
@@ -12,12 +13,16 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 class QuestionChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionChoice
-        fields = ['text', 'number']
+        fields = ['id', 'text', 'number']
 
     def create(self, validated_data):
-        question = Question.objects.get(pk=self.context["view"].kwargs["question_pk"])
+        question = Question.objects\
+        .annotate(choices_num=Count('choices'))\
+        .get(pk=self.context["view"].kwargs["question_pk"])
+        if question.type == 'text':
+            raise serializers.ValidationError('Вопрос не может иметь вариантов ответа')
         validated_data["question"] = question
-        return Question.objects.create(**validated_data)
+        return QuestionChoice.objects.create(**validated_data)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -59,22 +64,53 @@ class UserAnswersQuestionListSerializer(serializers.BaseSerializer):
 
     def create(self, validated_data):
         user_survey_id = validated_data['user_survey_id']
+        user_takes_survey_obj = UserTakesSurvey.objects.select_related('survey').get(pk=user_survey_id)
+        questions = Question.objects.select_related().prefetch_related('choices').filter(survey=user_takes_survey_obj.survey.id)
+        questions_ids = questions.values_list('id')
+        question_choices = QuestionChoice.objects.select_related().filter(question__in=questions_ids)
         answers = validated_data['answers']
         answers_objs = []
-        for answer in answers:
-            if 'choices' in answer:
-                for choice in answer['choices']:
-                    answers_objs.append(UserAnswersQuestion(
-                        user_survey_id=user_survey_id,
-                        question_id=answer['question_id'],
-                        choice_id=choice['choice_id']
-                    ))
-            else:
+
+        for question in questions:
+            answer = list(filter(lambda answer: answer['question_id'] == question.id, answers))
+            if not answer:
+                raise serializers.ValidationError(f'Нет ответа на вопрос {question.id}')
+            answer = answer[0]
+            if question.type == 'text':
+                if 'answer_text' not in answer:
+                    raise serializers.ValidationError(f'Нет ответа на вопрос {question.id}')
+                answer_text = answer['answer_text']
                 answers_objs.append(UserAnswersQuestion(
                         user_survey_id=user_survey_id,
                         question_id=answer['question_id'],
-                        answer_text=answer['answer_text']
+                        answer_text=answer_text
                     ))
+            elif question.type == 'single_choice':
+                if 'choice' not in answer:
+                    raise serializers.ValidationError(f'Нет ответа на вопрос {question.id}')
+                choice_id = answer['choice']
+                if choice_id not in list(question.choices.values_list('id', flat=True)):
+                    raise serializers.ValidationError(f'Некорректный ответ на вопрос {question.id}')
+                answers_objs.append(UserAnswersQuestion(
+                    user_survey_id=user_survey_id,
+                    question_id=answer['question_id'],
+                    choice_id=choice_id
+                ))
+            else:
+                if 'choices' not in answer:
+                        raise serializers.ValidationError(f'Нет ответа на вопрос {question.id}')
+                choices_ids = answer['choices']
+                possible_choices_ids = list(question.choices.values_list('id', flat=True))
+                print('possible choices:', possible_choices_ids)
+                for choice_id in choices_ids:
+                    if choice_id not in possible_choices_ids:
+                        raise serializers.ValidationError(f'Некорректный ответ на вопрос {question.id}')
+                    answers_objs.append(UserAnswersQuestion(
+                        user_survey_id=user_survey_id,
+                        question_id=answer['question_id'],
+                        choice_id=choice_id
+                    ))
+
         return UserAnswersQuestion.objects.bulk_create(answers_objs)
 
 
