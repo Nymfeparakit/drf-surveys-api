@@ -1,6 +1,6 @@
 import datetime
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, SAFE_METHODS, BasePermission
 from datetime import date
 from rest_framework import views
 from rest_framework import generics
@@ -14,8 +14,14 @@ from .serializers import SurveySerializer, QuestionSerializer, UserTakesSurveySe
      SimpleUserSerializer, UserSurveysSerializer, UpdateSurveySerializer
 
 
+class ReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS
+
+
 class SurveyViewSet(viewsets.ModelViewSet):
     # serializer_class = SurveySerializer
+    permission_classes = [IsAdminUser|ReadOnly]
 
     def get_queryset(self):
         """
