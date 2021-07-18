@@ -42,6 +42,9 @@ class SurveyViewSet(viewsets.ModelViewSet):
 
 
 class QuesionChoiceViewSet(viewsets.ModelViewSet):
+    """
+    Создание/изменение/удаление вариантов ответа
+    """
     serializer_class = QuestionChoiceSerializer
     permission_classes = [IsAdminUser]
 
