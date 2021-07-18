@@ -8,7 +8,7 @@ class Survey(models.Model):
     title = models.CharField(max_length=250)
     start_date = models.DateField() # дата начала
     end_date = models.DateField() # дата конца
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.title
@@ -24,7 +24,7 @@ class Question(models.Model):
         ('single_choice', 'single_choice'),
         ('multiple_choice', 'multiple_choice'),
     )
-    survey_id = models.ForeignKey(
+    survey = models.ForeignKey(
         'Survey',
         on_delete=models.CASCADE,
         related_name='questions'
@@ -48,7 +48,7 @@ class QuestionChoice(models.Model):
     """
     Вариант ответа на вопроса
     """
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         'Question',
         on_delete=models.CASCADE,
         related_name='choices'
@@ -63,24 +63,44 @@ class QuestionChoice(models.Model):
         return str(self.id)
 
 
+class UserTakesSurvey(models.Model):
+    """
+    Опрос, пройденный пользователем
+    """
+    user = models.ForeignKey(
+        'SimpleUser',
+        on_delete=models.CASCADE,
+        related_name='surveys'
+    )
+    survey = models.ForeignKey(
+        'Survey',
+        on_delete=models.CASCADE,
+        related_name='survey_obj'
+    )
+
+
 class UserAnswersQuestion(models.Model):
     """
     Содержит информацию о выбранных пользователем вариантах ответа 
     Или написанном тексте ответа
     """
-    user_id = models.ForeignKey(
-        'SimpleUser',
-        on_delete=models.CASCADE
+    user_survey = models.ForeignKey(
+        'UserTakesSurvey',
+        on_delete=models.CASCADE,
+        related_name='answers'
     )
-    question_id = models.ForeignKey(
+    question = models.ForeignKey(
         'Question',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='answer'
     )
-    choice_id = models.ForeignKey(
+    choice = models.ForeignKey(
         'QuestionChoice',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
     ) # выбранный ответ, если вопроса содержал варианты ответа
-    answer_text = models.TextField() # текст ответа, если для вопроса не было вариантов ответа
+    answer_text = models.TextField(blank=True) # текст ответа, если для вопроса не было вариантов ответа
 
 
 class SimpleUser(models.Model):
