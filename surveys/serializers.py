@@ -12,14 +12,24 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 class QuestionChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionChoice
-        fields = ['text', 'question_id']
+        fields = ['text', 'number']
+
+    def create(self, validated_data):
+        question = Question.objects.get(pk=self.context["view"].kwargs["question_pk"])
+        validated_data["question"] = question
+        return Question.objects.create(**validated_data)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     choices = QuestionChoiceSerializer(many=True, read_only=True)
     class Meta:
         model = Question
-        fields = ['id', 'title', 'type', 'survey_id', 'choices']
+        fields = ['id', 'title', 'type', 'choices', 'number']
+    
+    def create(self, validated_data):
+        survey = Survey.objects.get(pk=self.context["view"].kwargs["survey_pk"])
+        validated_data["survey"] = survey
+        return Question.objects.create(**validated_data)
 
 
 class SurveySerializer(serializers.ModelSerializer):
