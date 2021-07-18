@@ -11,11 +11,11 @@ from rest_framework import status
 
 from .models import Survey, Question, SimpleUser, UserAnswersQuestion
 from .serializers import SurveySerializer, QuestionSerializer, UserTakesSurveySerializer, \
-     SimpleUserSerializer, UserSurveysSerializer
+     SimpleUserSerializer, UserSurveysSerializer, UpdateSurveySerializer
 
 
 class SurveyViewSet(viewsets.ModelViewSet):
-    serializer_class = SurveySerializer
+    # serializer_class = SurveySerializer
 
     def get_queryset(self):
         """
@@ -27,6 +27,12 @@ class SurveyViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return qs
         return qs.filter(end_date__gte=date.today())
+
+    def get_serializer_class(self):
+        if self.action == 'partial_update' or self.action == 'update':
+            return UpdateSurveySerializer
+        else:
+            return SurveySerializer
 
 
 class QuestionViewSet(viewsets.ModelViewSet):

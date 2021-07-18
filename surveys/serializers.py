@@ -26,7 +26,14 @@ class SurveySerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
     class Meta:
         model = Survey
-        fields = ['id', 'title', 'start_date', 'end_date', 'description', 'questions']
+        fields = ['id', 'title', 'end_date', 'start_date', 'description', 'questions']
+
+
+class UpdateSurveySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Survey
+        fields = ['id', 'title', 'start_date', 'end_date', 'description']
+        read_only_fields = ['start_date']
 
 
 class UserAnswersQuestionSerializer(serializers.ModelSerializer):

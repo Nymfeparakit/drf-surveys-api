@@ -1,4 +1,6 @@
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
 
 
 class Survey(models.Model):
@@ -12,6 +14,12 @@ class Survey(models.Model):
 
     def __str__(self):
         return self.title
+
+
+@receiver(pre_save, sender=Survey)
+def check_start_date_less_end_date(sender, instance, **kwargs):
+    if instance.start_date > instance.end_date:
+        raise ValueError('Дата старта должна быть ранее даты окончания')
 
 
 class Question(models.Model):
