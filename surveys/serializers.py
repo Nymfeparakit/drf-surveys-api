@@ -16,6 +16,10 @@ class QuestionChoiceSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'number']
 
     def create(self, validated_data):
+        """
+        Создает вариант ответа
+        Перед этим делает проверку, что вопрос не имеет текстовый тип
+        """
         question = Question.objects\
         .annotate(choices_num=Count('choices'))\
         .get(pk=self.context["view"].kwargs["question_pk"])
@@ -45,6 +49,10 @@ class SurveySerializer(serializers.ModelSerializer):
 
 
 class UpdateSurveySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор, используемый для обновления опроса
+    Не позволяет изменить дату начала опроса
+    """
     class Meta:
         model = Survey
         fields = ['id', 'title', 'start_date', 'end_date', 'description']
@@ -59,6 +67,9 @@ class UserAnswersQuestionSerializer(serializers.ModelSerializer):
 
 
 class UserAnswersQuestionListSerializer(serializers.BaseSerializer):
+    """
+    Сериализует список ответов пользователя на вопросы
+    """
     def to_internal_value(self, data):
         return data
 
