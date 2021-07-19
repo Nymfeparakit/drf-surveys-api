@@ -20,7 +20,6 @@ class ReadOnly(BasePermission):
 
 
 class SurveyViewSet(viewsets.ModelViewSet):
-    # serializer_class = SurveySerializer
     permission_classes = [IsAdminUser|ReadOnly]
 
     def get_queryset(self):
